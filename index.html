@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>書類印刷-MATSUSHITA</title>
+<title>書類印刷</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
@@ -133,7 +133,7 @@
 </head>
 <body>
 
-<header><h1 id="title">書類印刷-MATSUSHITA</h1></header>
+<header><h1 id="title">書類印刷</h1></header>
 <main id="main"></main>
 
 <div class="bar">
@@ -168,7 +168,7 @@
       id: si + "-" + ii, sec: sec.title, name: it.name, file: it.file, on: false, copies: 1,
       inList: sec.checklist !== false,
       obtain: !!sec.obtain,
-      listName: sec.listName ? sec.listName.replace("{name}", it.name) : it.name,
+      listName: it.listName || (sec.listName ? sec.listName.replace("{name}", it.name) : it.name),
     })));
   const byId = (id) => items.find((x) => x.id === id);
 

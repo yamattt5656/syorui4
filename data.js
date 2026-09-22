@@ -21,6 +21,15 @@ const COVER = {
 
 const SECTIONS = [
   {
+    title: "お客様に返送を依頼",
+    obtain: true,       // 印刷はせず、返送リストにだけ載せる
+    items: [
+      // listName … 返送リストに印字する名前（省略すると name がそのまま出ます）
+      { name: "自動車注文書", listName: "自動車注文書（ご記入ご捺印の上、2枚目以降を返送）" },
+      { name: "ローン振込口座記入用紙" },
+    ],
+  },
+  {
     title: "役所などで取得",
     obtain: true,       // お客様が取得する書類（印刷はせず、返送リストにだけ載せる）
     items: [
