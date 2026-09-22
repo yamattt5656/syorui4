@@ -62,4 +62,10 @@ const SECTIONS = [
       { name: "愛知県", file: "kanpu-aichi.pdf" },
     ],
   },
+  {
+    title: "振込口座",
+    items: [
+      { name: "振込口座記入用紙", file: "furikomi-kouza.pdf" },
+    ],
+  },
 ];
