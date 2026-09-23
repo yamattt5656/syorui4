@@ -384,7 +384,9 @@
       } else {
         const png = new Uint8Array(bytes)[0] === 0x89;
         const img = png ? await out.embedPng(bytes) : await out.embedJpg(bytes);
-        const W = 841.89, H = 595.28, M = 28;
+        // 画像の向きに合わせてA4横／A4縦を選ぶ
+        const yoko = img.width >= img.height;
+        const W = yoko ? 841.89 : 595.28, H = yoko ? 595.28 : 841.89, M = 28;
         const k = Math.min((W - M * 2) / img.width, (H - M * 2) / img.height);
         const w = img.width * k, h = img.height * k;
         for (let c = 0; c < x.copies; c++) {

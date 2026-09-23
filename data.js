@@ -63,6 +63,7 @@ const SECTIONS = [
       { name: "自認書（見本）",           file: "mihon-jinin.jpg" },
       { name: "配置図 個人宅（見本）",    file: "mihon-haichizu.jpg" },
       { name: "保管場所使用承諾証明書（見本）", file: "mihon-shodaku.jpg" },
+      { name: "所有権解除依頼書（見本）",       file: "mihon-shoyuken-kaijo.png" },
     ],
   },
   {
