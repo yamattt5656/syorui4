@@ -71,6 +71,10 @@ const SECTIONS = [
     items: [
       { name: "静岡県", file: "kanpu-shizuoka.pdf" },
       { name: "愛知県", file: "kanpu-aichi.pdf" },
+      { name: "岐阜県", file: "kanpu-gifu.pdf" },
+      { name: "三重県", file: "kanpu-mie.pdf" },
+      { name: "山梨県", file: "kanpu-yamanashi.pdf" },
+      { name: "長野県", file: "kanpu-nagano.pdf" },
     ],
   },
   {
