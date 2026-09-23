@@ -274,7 +274,10 @@
     if ($("#cover").checked) {
       const ans = await askGarage();
       if (ans === "cancel") return;
-      const rows = list.filter((x) => x.inList).map((x) => ({ name: x.listName, copies: x.copies }));
+      const hide = ans === "yes" ? (COVER.garageHide || []) : [];
+      const rows = list
+        .filter((x) => x.inList && !hide.includes(x.name))
+        .map((x) => ({ name: x.listName, copies: x.copies }));
       if (ans === "yes") rows.push({ name: COVER.garageItem, copies: 1 });
       if (rows.length) cover = rows;
     }
