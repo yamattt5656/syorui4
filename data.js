@@ -48,7 +48,7 @@ const SECTIONS = [
     items: [
       { name: "委任状",                   file: "ininjo.pdf" },
       { name: "譲渡証明書",               file: "joto.pdf" },
-      { name: "自動車保管場所証明申請書", file: "shako-shinsei.pdf" },
+      { name: "車庫申請書（1枚のみ）",     file: "shako-shinsei.pdf" },
       { name: "自認書",                   file: "jinin.pdf" },
       { name: "配置図",                   file: "haichizu.pdf" },
       { name: "保管場所使用承諾証明書",   file: "shodaku.pdf" },
