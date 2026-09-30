@@ -213,7 +213,7 @@
       items.push({
         id: si + "-s", sec: sec.title, name: sec.selectLabel || sec.title, on: false, copies: 1,
         inList: sec.checklist !== false, obtain: !!sec.obtain,
-        choices: sec.items, pick, tmpl: sec.listName || "{name}",
+        choices: sec.items, pick, tmpl: sec.listName || "{name}", coverNote: sec.coverNote,
       });
       return;
     }
@@ -403,7 +403,8 @@
         .filter((x) => x.inList && !hide.includes(x.name))
         .map((x) => ({ name: listNameOf(x), copies: x.copies }));
       if (ans === "yes") rows.push({ name: COVER.garageItem, copies: 1 });
-      if (rows.length) cover = rows;
+      const notes = list.filter((x) => x.coverNote).map((x) => x.coverNote);
+      if (rows.length) cover = { rows, notes };
     }
     const docs = list.filter((x) => !x.obtain && fileOf(x));   // 役所で取得する書類は印刷しない
     if (!docs.length && !cover) {
@@ -414,7 +415,7 @@
   }
 
   // A4縦の頭紙を画像として描く（日本語フォントをPDFに埋め込まずに済むため）
-  async function drawCover(rows) {
+  async function drawCover(rows, notes) {
     const F = '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif';
     try { await Promise.all([document.fonts.load(`700 20px "BIZ UDPGothic"`), document.fonts.load(`400 20px "BIZ UDPGothic"`)]); } catch (_) {}
     const S = 2.5, W = 595.28, H = 841.89;          // pt単位で描いて S 倍で出力
@@ -449,6 +450,24 @@
         text(`${r.copies}部`, Rt - 10, y + 26, 12, false, "right");
       }
       y += rowH; line(L, y, Rt, y);
+    });
+
+    // 注意文（選んだ書類に応じて表示）
+    (notes || []).forEach((n) => {
+      g.font = `700 11.5px ${F}`;
+      const maxW = Rt - L - 28, lines = [];
+      let cur = "";
+      for (const ch of String(n)) {
+        if (g.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
+        else cur += ch;
+      }
+      lines.push(cur);
+      y += 26;
+      const boxH = 16 + lines.length * 19;
+      g.lineWidth = 1.2; g.strokeStyle = "#000";
+      g.strokeRect(L, y, Rt - L, boxH);
+      lines.forEach((ln, i) => text(ln, L + 14, y + 22 + i * 19, 11.5, true));
+      y += boxH;
     });
 
     if (COVER.shop) text(COVER.shop, Rt, H - 60, 11, false, "right");
@@ -549,7 +568,7 @@
     const { PDFDocument } = PDFLib;
     const out = await PDFDocument.create();
     if (cover) {
-      const img = await out.embedPng(await drawCover(cover));
+      const img = await out.embedPng(await drawCover(cover.rows, cover.notes));
       out.addPage([595.28, 841.89]).drawImage(img, { x: 0, y: 0, width: 595.28, height: 841.89 });
     }
     const missing = [];

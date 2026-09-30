@@ -123,6 +123,35 @@ const SECTIONS = [
     ],
   },
   {
+    title: "ETCセットアップ",
+    select: true,
+    selectLabel: "担当者",
+    listName: "ETCセットアップ申請方法のご案内（{name}）",
+    checklist: false,              // 返送リストには載せない（載せたい場合はこの行を消す）
+    // この書類を選ぶと、頭紙の下にこの文が印字されます
+    coverNote: "同封のETCセットアップ申請方法のご案内のQRコードから、申し込みを1週間以内に行ってください",
+    items: [
+      { name: "浅倉 康介", file: "etc-asakura.pdf" },
+      { name: "石神 悠", file: "etc-ishigami.pdf" },
+      { name: "石山 拓哉", file: "etc-ishiyama.pdf" },
+      { name: "伊藤 健嗣", file: "etc-k-ito.pdf" },
+      { name: "大瀧 雅伸", file: "etc-ohtaki.pdf" },
+      { name: "大松 虎雅", file: "etc-omatsu.pdf" },
+      { name: "大類 哲哉", file: "etc-oorui.pdf" },
+      { name: "大和 祐太", file: "etc-oowa.pdf" },
+      { name: "柿崎 匡哉", file: "etc-kakizaki.pdf" },
+      { name: "近藤 寛将", file: "etc-kondo.pdf" },
+      { name: "四野見 貴章", file: "etc-shinomi.pdf" },
+      { name: "鈴木 孝宏", file: "etc-t-suzuki.pdf" },
+      { name: "千原 武友", file: "etc-chihara.pdf" },
+      { name: "馬塚 教徳", file: "etc-m-maduka.pdf" },
+      { name: "馬塚 基成", file: "etc-maduka.pdf" },
+      { name: "原 智昭", file: "etc-hara.pdf" },
+      { name: "原木 浩行", file: "etc-haraki.pdf" },
+      { name: "平賀 友章", file: "etc-hiraga.pdf" },
+    ],
+  },
+  {
     title: "振込口座",
     items: [
       { name: "振込口座記入用紙", file: "furikomi-kouza.pdf" },
