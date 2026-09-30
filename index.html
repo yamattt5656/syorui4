@@ -172,8 +172,7 @@
     <button id="edReset" class="ed-reset">元の文章に戻す</button></div>
   <textarea id="edText" spellcheck="false"></textarea>
   <div class="ed-btns">
-    <button id="edClose" class="ask-no">閉じる</button>
-    <button id="edPrint" class="ask-yes">印刷</button>
+    <button id="edClose" class="ask-yes">保存して閉じる</button>
   </div>
 </dialog>
 <dialog id="ask" aria-labelledby="askText">
@@ -249,7 +248,7 @@
           <select data-act="pick" aria-label="テンプレートを選ぶ">${opts}</select>
         </div>
         <div class="ctrl">
-          <button class="one" data-act="edit">文章を編集</button>
+          <button class="one" data-act="edit">編集</button>
           <div class="stepper">
             <button data-act="minus" aria-label="部数を減らす" ${x.copies <= 1 ? "disabled" : ""}>−</button>
             <output>${x.copies}部</output>
@@ -473,11 +472,10 @@
     delete edited[chosen(edItem).key];
     $("#edText").value = textOf(edItem);
   });
-  $("#edClose").addEventListener("click", () => ed.close());
-  $("#edPrint").addEventListener("click", () => {
+  $("#edClose").addEventListener("click", () => {
     const x = edItem;
     ed.close();
-    if (x) { x.on = true; redraw(x); startPrint([x]); }
+    if (x) { x.on = true; redraw(x); }   // 編集したテンプレートは選択状態にしておく
   });
 
   // 文面をA4縦のページ画像にする（必要なだけページを分けます）
