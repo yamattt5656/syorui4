@@ -77,6 +77,12 @@
   }
   .note li + li { margin-top: 4px; }
 
+  .pick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pick select {
+    font: inherit; font-size: 1rem; color: var(--ink); background: var(--sheet);
+    border: 2px solid var(--ink); border-radius: 5px; padding: 6px 8px; min-width: 9em;
+  }
+
   .ctrl { display: flex; align-items: center; gap: 6px; }
   .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 5px; }
   .stepper button { width: 32px; height: 36px; border: none; background: none; font-size: 1.1rem; }
@@ -170,17 +176,59 @@
 
   // 状態：書類ごとに 選択 と 部数
   const items = [];
-  SECTIONS.forEach((sec, si) => sec.items.forEach((it, ii) =>
-    items.push({
-      id: si + "-" + ii, sec: sec.title, name: it.name, file: it.file, on: false, copies: 1,
-      inList: sec.checklist !== false,
-      obtain: !!sec.obtain,
-      listName: it.listName || (sec.listName ? sec.listName.replace("{name}", it.name) : it.name),
-    })));
+  SECTIONS.forEach((sec, si) => {
+    if (sec.select) {
+      // プルダウンで1つ選ぶ欄
+      const pick = Math.max(0, sec.items.findIndex((it) => it.file));
+      items.push({
+        id: si + "-s", sec: sec.title, name: sec.selectLabel || sec.title, on: false, copies: 1,
+        inList: sec.checklist !== false, obtain: !!sec.obtain,
+        choices: sec.items, pick, tmpl: sec.listName || "{name}",
+      });
+      return;
+    }
+    sec.items.forEach((it, ii) =>
+      items.push({
+        id: si + "-" + ii, sec: sec.title, name: it.name, file: it.file, on: false, copies: 1,
+        inList: sec.checklist !== false,
+        obtain: !!sec.obtain,
+        listName: it.listName || (sec.listName ? sec.listName.replace("{name}", it.name) : it.name),
+      }));
+  });
+  const chosen = (x) => (x.choices ? x.choices[x.pick] : null);
+  const fileOf = (x) => (x.choices ? chosen(x).file : x.file);
+  const listNameOf = (x) => (x.choices ? x.tmpl.replace("{name}", chosen(x).name) : x.listName);
   const byId = (id) => items.find((x) => x.id === id);
 
   // ---------- 表示 ----------
   function itemHtml(x) {
+    if (x.choices) {
+      const file = fileOf(x);
+      const groups = [];
+      x.choices.forEach((c, i) => {
+        const g = c.group || "";
+        if (!groups.length || groups[groups.length - 1].g !== g) groups.push({ g, opts: [] });
+        groups[groups.length - 1].opts.push(
+          `<option value="${i}" ${i === x.pick ? "selected" : ""}>${esc(c.name)}${c.file ? "" : "（未登録）"}</option>`);
+      });
+      return `<div class="item ${x.on ? "on" : ""}" data-id="${x.id}">
+        <span class="mark" aria-hidden="true"></span>
+        <div class="pick">
+          <span class="name">${esc(x.name)}</span>
+          <select data-act="pick" aria-label="${esc(x.name)}を選ぶ">
+            ${groups.map((gr) => gr.g ? `<optgroup label="${esc(gr.g)}">${gr.opts.join("")}</optgroup>` : gr.opts.join("")).join("")}
+          </select>
+        </div>
+        <div class="ctrl">
+          <div class="stepper">
+            <button data-act="minus" aria-label="部数を減らす" ${x.copies <= 1 ? "disabled" : ""}>−</button>
+            <output>${x.copies}部</output>
+            <button data-act="plus" aria-label="部数を増やす" ${x.copies >= 20 ? "disabled" : ""}>＋</button>
+          </div>
+          <button class="one" data-act="print" ${file ? "" : "disabled"}>印刷</button>
+        </div>
+      </div>`;
+    }
     if (!x.file && !x.obtain) {
       return `<div class="item none" data-id="${x.id}">
         <span class="mark"></span>
@@ -231,6 +279,7 @@
     if (!card || card.classList.contains("none")) return;
     const x = byId(card.dataset.id);
     const btn = e.target.closest("[data-act]");
+    if (btn && btn.dataset.act === "pick") return;   // プルダウンの操作では選択を切り替えない
     if (btn) {
       const act = btn.dataset.act;
       if (act === "print") { startPrint([x]); return; }
@@ -249,6 +298,16 @@
     const x = byId(card.dataset.id);
     x.on = !x.on;
     redraw(x);
+  });
+
+  // プルダウンで書類を切り替えたとき
+  $("#main").addEventListener("change", (e) => {
+    const el = e.target.closest("[data-act='pick']");
+    if (!el) return;
+    const x = byId(el.closest(".item").dataset.id);
+    x.pick = Number(el.value);
+    x.on = true;
+    redraw(x, "[data-act='pick']");
   });
 
   $("#clear").addEventListener("click", () => {
@@ -285,11 +344,11 @@
       const hide = ans === "yes" ? (COVER.garageHide || []) : [];
       const rows = list
         .filter((x) => x.inList && !hide.includes(x.name))
-        .map((x) => ({ name: x.listName, copies: x.copies }));
+        .map((x) => ({ name: listNameOf(x), copies: x.copies }));
       if (ans === "yes") rows.push({ name: COVER.garageItem, copies: 1 });
       if (rows.length) cover = rows;
     }
-    const docs = list.filter((x) => !x.obtain);   // 役所で取得する書類は印刷しない
+    const docs = list.filter((x) => !x.obtain && fileOf(x));   // 役所で取得する書類は印刷しない
     if (!docs.length && !cover) {
       toast("印刷する書類がありません。役所などで取得する書類は、頭紙をつけると返送リストに載ります。", true);
       return;
@@ -381,10 +440,11 @@
     const missing = [];
     let added = 0;
     for (const x of list) {
-      const bytes = await load(x.file);
-      if (!bytes) { missing.push(x.file.split("/").pop()); continue; }
+      const file = fileOf(x);
+      const bytes = await load(file);
+      if (!bytes) { missing.push(file.split("/").pop()); continue; }
       added++;
-      if (/\.pdf$/i.test(x.file)) {
+      if (/\.pdf$/i.test(file)) {
         // 元のPDFのページサイズがまちまちでも、印刷幅がそろうようA4に合わせる
         const src = await PDFDocument.load(bytes);
         const pages = await out.embedPages(src.getPages());

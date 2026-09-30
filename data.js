@@ -73,32 +73,28 @@ const SECTIONS = [
     ],
   },
   {
-    title: "還付書類　東海・北陸・近畿",
-    listName: "還付書類（{name}）",   // チェックリストでの表示名
+    title: "還付書類",
+    select: true,                     // プルダウンで選ぶ欄にする
+    selectLabel: "還付書類",           // カードに表示する名前
+    listName: "還付書類（{name}）",    // チェックリストでの表示名
     items: [
-      { name: "愛知県",   file: "kanpu-aichi.pdf" },
-      { name: "静岡県",   file: "kanpu-shizuoka.pdf" },
-      { name: "三重県",   file: "kanpu-mie.pdf" },
-      { name: "岐阜県",   file: "kanpu-gifu.pdf" },
-      { name: "富山県",   file: "toyama.pdf" },
-      { name: "石川県",   file: "ishikawa.pdf" },
-      { name: "福井県",   file: "fukui.pdf" },
-      { name: "大阪府",   file: "osaka.pdf" },
-      { name: "兵庫県",   file: "hyougo.pdf" },
-      { name: "京都府",   file: "kyoto.pdf" },
-      { name: "滋賀県",   file: "shiga.pdf" },
-      { name: "奈良県",   file: "nara.pdf" },
-      { name: "和歌山県", file: "wakayama.pdf" },
-    ],
-  },
-  {
-    title: "還付書類　甲信越",
-    listName: "還付書類（{name}）",
-    items: [
-      { name: "山梨県", file: "kanpu-yamanashi.pdf" },
-      { name: "長野県", file: "kanpu-nagano.pdf" },
+      { group: "東海・北陸・近畿", name: "愛知県",   file: "kanpu-aichi.pdf" },
+      { group: "東海・北陸・近畿", name: "静岡県",   file: "kanpu-shizuoka.pdf" },
+      { group: "東海・北陸・近畿", name: "三重県",   file: "kanpu-mie.pdf" },
+      { group: "東海・北陸・近畿", name: "岐阜県",   file: "kanpu-gifu.pdf" },
+      { group: "東海・北陸・近畿", name: "富山県",   file: "toyama.pdf" },
+      { group: "東海・北陸・近畿", name: "石川県",   file: "ishikawa.pdf" },
+      { group: "東海・北陸・近畿", name: "福井県",   file: "fukui.pdf" },
+      { group: "東海・北陸・近畿", name: "大阪府",   file: "osaka.pdf" },
+      { group: "東海・北陸・近畿", name: "兵庫県",   file: "hyougo.pdf" },
+      { group: "東海・北陸・近畿", name: "京都府",   file: "kyoto.pdf" },
+      { group: "東海・北陸・近畿", name: "滋賀県",   file: "shiga.pdf" },
+      { group: "東海・北陸・近畿", name: "奈良県",   file: "nara.pdf" },
+      { group: "東海・北陸・近畿", name: "和歌山県", file: "wakayama.pdf" },
+      { group: "甲信越",           name: "山梨県",   file: "kanpu-yamanashi.pdf" },
+      { group: "甲信越",           name: "長野県",   file: "kanpu-nagano.pdf" },
       // 新潟県の様式が手に入ったら、null をファイル名に書き換えてください
-      { name: "新潟県", file: null },
+      { group: "甲信越",           name: "新潟県",   file: null },
     ],
   },
   {
