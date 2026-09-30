@@ -119,6 +119,18 @@
     width: min(92vw, 420px); color: var(--ink); background: var(--sheet);
   }
   dialog::backdrop { background: rgba(28, 43, 58, .45); }
+  #editor { width: min(94vw, 760px); padding: 20px; }
+  .ed-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; }
+  .ed-head strong { font-size: 1.05rem; }
+  .ed-reset { border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: .85rem; padding: 0; }
+  #edText {
+    width: 100%; height: min(60vh, 520px); resize: vertical;
+    font: inherit; font-size: .95rem; line-height: 1.7; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 5px; padding: 12px; background: var(--sheet);
+  }
+  .ed-btns { display: flex; gap: 10px; margin-top: 14px; }
+  .ed-btns button { flex: 1; height: 48px; border-radius: 5px; font-weight: 700; }
+
   dialog p { margin: 4px 24px 22px 0; font-size: 1.2rem; font-weight: 700; }
   .ask-btns { display: flex; gap: 10px; }
   .ask-btns button { flex: 1; height: 52px; border-radius: 5px; font-weight: 700; font-size: 1.05rem; }
@@ -155,6 +167,15 @@
   <button class="clear" id="clear">選択を解除</button>
   <button class="go" id="go">印刷</button>
 </div>
+<dialog id="editor" aria-label="文章を編集">
+  <div class="ed-head"><strong id="edTitle"></strong>
+    <button id="edReset" class="ed-reset">元の文章に戻す</button></div>
+  <textarea id="edText" spellcheck="false"></textarea>
+  <div class="ed-btns">
+    <button id="edClose" class="ask-no">閉じる</button>
+    <button id="edPrint" class="ask-yes">印刷</button>
+  </div>
+</dialog>
 <dialog id="ask" aria-labelledby="askText">
   <p id="askText">車庫証明はお客様出しですか？</p>
   <div class="ask-btns">
@@ -165,6 +186,7 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="templates.js"></script>
 <script src="data.js"></script>
 <script>
 (() => {
@@ -177,6 +199,13 @@
   // 状態：書類ごとに 選択 と 部数
   const items = [];
   SECTIONS.forEach((sec, si) => {
+    if (sec.templates) {
+      items.push({
+        id: si + "-t", sec: sec.title, name: sec.selectLabel || sec.title, on: false, copies: 1,
+        inList: sec.checklist !== false, text: true, choices: sec.items, pick: 0,
+      });
+      return;
+    }
     if (sec.select) {
       // プルダウンで1つ選ぶ欄
       // default: true の書類を最初に表示（なければ最初の登録済みのもの）
@@ -198,12 +227,38 @@
       }));
   });
   const chosen = (x) => (x.choices ? x.choices[x.pick] : null);
-  const fileOf = (x) => (x.choices ? chosen(x).file : x.file);
+  const fileOf = (x) => (x.text ? "text" : x.choices ? chosen(x).file : x.file);
+  // 編集した文面（このページを開いている間だけ保持）
+  const edited = {};
+  const textOf = (x) => {
+    const k = chosen(x).key;
+    return k in edited ? edited[k] : (TEMPLATE_TEXT[k] || "");
+  };
   const listNameOf = (x) => (x.choices ? x.tmpl.replace("{name}", chosen(x).name) : x.listName);
   const byId = (id) => items.find((x) => x.id === id);
 
   // ---------- 表示 ----------
   function itemHtml(x) {
+    if (x.text) {
+      const opts = x.choices.map((c, i) =>
+        `<option value="${i}" ${i === x.pick ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+      return `<div class="item ${x.on ? "on" : ""}" data-id="${x.id}">
+        <span class="mark" aria-hidden="true"></span>
+        <div class="pick">
+          <span class="name">${esc(x.name)}</span>
+          <select data-act="pick" aria-label="テンプレートを選ぶ">${opts}</select>
+        </div>
+        <div class="ctrl">
+          <button class="one" data-act="edit">文章を編集</button>
+          <div class="stepper">
+            <button data-act="minus" aria-label="部数を減らす" ${x.copies <= 1 ? "disabled" : ""}>−</button>
+            <output>${x.copies}部</output>
+            <button data-act="plus" aria-label="部数を増やす" ${x.copies >= 20 ? "disabled" : ""}>＋</button>
+          </div>
+          <button class="one" data-act="print">印刷</button>
+        </div>
+      </div>`;
+    }
     if (x.choices) {
       const file = fileOf(x);
       const groups = [];
@@ -284,6 +339,7 @@
     if (btn && btn.dataset.act === "pick") return;   // プルダウンの操作では選択を切り替えない
     if (btn) {
       const act = btn.dataset.act;
+      if (act === "edit") { openEditor(x); return; }
       if (act === "print") { startPrint([x]); return; }
       if (act === "minus") x.copies = Math.max(1, x.copies - 1);
       if (act === "plus") { x.copies = Math.min(20, x.copies + 1); x.on = true; }
@@ -400,6 +456,65 @@
     return new Promise((res) => c.toBlob((b) => b.arrayBuffer().then(res), "image/png"));
   }
 
+  // ---------- 文章の編集 ----------
+  const ed = $("#editor");
+  let edItem = null;
+  function openEditor(x) {
+    edItem = x;
+    $("#edTitle").textContent = chosen(x).name;
+    $("#edText").value = textOf(x);
+    ed.showModal();
+  }
+  $("#edText").addEventListener("input", () => {
+    if (edItem) edited[chosen(edItem).key] = $("#edText").value;
+  });
+  $("#edReset").addEventListener("click", () => {
+    if (!edItem) return;
+    delete edited[chosen(edItem).key];
+    $("#edText").value = textOf(edItem);
+  });
+  $("#edClose").addEventListener("click", () => ed.close());
+  $("#edPrint").addEventListener("click", () => {
+    const x = edItem;
+    ed.close();
+    if (x) { x.on = true; redraw(x); startPrint([x]); }
+  });
+
+  // 文面をA4縦のページ画像にする（必要なだけページを分けます）
+  async function textPages(text) {
+    const F = '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif';
+    try { await document.fonts.load(`400 11px "BIZ UDPGothic"`); } catch (_) {}
+    const S = 2.5, W = 595.28, H = 841.89, M = 54, SIZE = 11, LH = 19.5;
+    const maxW = W - M * 2, perPage = Math.floor((H - M * 2) / LH);
+
+    // 行を折り返す
+    const probe = document.createElement("canvas").getContext("2d");
+    probe.font = `400 ${SIZE}px ${F}`;
+    const lines = [];
+    String(text).split("\n").forEach((src) => {
+      if (!src) { lines.push(""); return; }
+      let cur = "";
+      for (const ch of src) {
+        if (probe.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
+        else cur += ch;
+      }
+      lines.push(cur);
+    });
+
+    const pages = [];
+    for (let i = 0; i < lines.length; i += perPage) {
+      const c = document.createElement("canvas");
+      c.width = Math.round(W * S); c.height = Math.round(H * S);
+      const g = c.getContext("2d");
+      g.scale(S, S);
+      g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+      g.fillStyle = "#000"; g.font = `400 ${SIZE}px ${F}`; g.textBaseline = "alphabetic";
+      lines.slice(i, i + perPage).forEach((ln, j) => g.fillText(ln, M, M + LH * (j + 1)));
+      pages.push(await new Promise((res) => c.toBlob((b) => b.arrayBuffer().then(res), "image/png")));
+    }
+    return pages;
+  }
+
   // ---------- 印刷 ----------
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -442,6 +557,18 @@
     const missing = [];
     let added = 0;
     for (const x of list) {
+      if (x.text) {
+        const pages = await textPages(textOf(x));
+        for (let c = 0; c < x.copies; c++) {
+          for (const pb of pages) {
+            const img = await out.embedPng(pb);
+            const W = 595.28, H = 841.89;
+            out.addPage([W, H]).drawImage(img, { x: 0, y: 0, width: W, height: H });
+          }
+        }
+        added++;
+        continue;
+      }
       const file = fileOf(x);
       const bytes = await load(file);
       if (!bytes) { missing.push(file.split("/").pop()); continue; }

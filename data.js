@@ -23,6 +23,24 @@ const COVER = {
 
 const SECTIONS = [
   {
+    title: "遠方販売のテンプレート",
+    templates: true,               // 文章を編集して印刷できる欄（文面は templates.js）
+    selectLabel: "テンプレート",
+    checklist: false,              // 返送リストには載せない
+    items: [
+      { name: "普通車 現金",            key: "futsu-genkin" },
+      { name: "普通車 現金 法人",       key: "futsu-genkin-houjin" },
+      { name: "普通車 オリコ",          key: "futsu-orico" },
+      { name: "普通車 オリコ 法人",     key: "futsu-orico-houjin" },
+      { name: "普通車 ZERO登録陸送",    key: "futsu-zero" },
+      { name: "軽自動車 現金",          key: "kei-genkin" },
+      { name: "軽自動車 現金 法人",     key: "kei-genkin-houjin" },
+      { name: "軽自動車 オリコ",        key: "kei-orico" },
+      { name: "軽自動車 オリコ 法人",   key: "kei-orico-houjin" },
+      { name: "購入に関して",           key: "kounyu" },
+    ],
+  },
+  {
     title: "お客様に返送を依頼",
     obtain: true,       // 印刷はせず、返送リストにだけ載せる
     items: [
