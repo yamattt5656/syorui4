@@ -79,7 +79,7 @@ const SECTIONS = [
     listName: "還付書類（{name}）",    // チェックリストでの表示名
     items: [
       { group: "東海・北陸・近畿", name: "愛知県",   file: "kanpu-aichi.pdf" },
-      { group: "東海・北陸・近畿", name: "静岡県",   file: "kanpu-shizuoka.pdf" },
+      { group: "東海・北陸・近畿", name: "静岡県",   file: "kanpu-shizuoka.pdf", default: true },   // 最初に選ばれる県
       { group: "東海・北陸・近畿", name: "三重県",   file: "kanpu-mie.pdf" },
       { group: "東海・北陸・近畿", name: "岐阜県",   file: "kanpu-gifu.pdf" },
       { group: "東海・北陸・近畿", name: "富山県",   file: "toyama.pdf" },

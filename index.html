@@ -179,7 +179,9 @@
   SECTIONS.forEach((sec, si) => {
     if (sec.select) {
       // プルダウンで1つ選ぶ欄
-      const pick = Math.max(0, sec.items.findIndex((it) => it.file));
+      // default: true の書類を最初に表示（なければ最初の登録済みのもの）
+      let pick = sec.items.findIndex((it) => it.default && it.file);
+      if (pick < 0) pick = Math.max(0, sec.items.findIndex((it) => it.file));
       items.push({
         id: si + "-s", sec: sec.title, name: sec.selectLabel || sec.title, on: false, copies: 1,
         inList: sec.checklist !== false, obtain: !!sec.obtain,
