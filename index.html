@@ -407,7 +407,19 @@
     });
   }
 
+  // data.js の PRINT_ORDER の順に並べ替える
+  function sortForPrint(list) {
+    const order = (typeof PRINT_ORDER !== "undefined" ? PRINT_ORDER : []);
+    const keyOf = (x) => (x.choices || x.text ? x.sec : x.name);
+    const rank = (x) => {
+      const i = order.indexOf(keyOf(x));
+      return i < 0 ? order.length + items.indexOf(x) : i;
+    };
+    return [...list].sort((a, b) => rank(a) - rank(b));
+  }
+
   async function startPrint(list) {
+    list = sortForPrint(list);
     let cover = null;
     if ($("#cover").checked) {
       const ans = await askGarage();
