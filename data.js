@@ -153,6 +153,7 @@ const SECTIONS = [
       { name: "石山 拓哉", file: "etc-ishiyama.pdf" },
       { name: "伊藤 健嗣", file: "etc-k-ito.pdf" },
       { name: "大瀧 雅伸", file: "etc-ohtaki.pdf" },
+      { name: "大庭 亮太", file: "etc-ooba.pdf" },
       { name: "大松 虎雅", file: "etc-omatsu.pdf" },
       { name: "大類 哲哉", file: "etc-oorui.pdf" },
       { name: "大和 祐太", file: "etc-oowa.pdf" },
