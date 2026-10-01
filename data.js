@@ -18,14 +18,14 @@ const COVER = {
   blankRows: 2,        // 手書き用の空欄の行数
   garageItem: "車庫証明（提出後引取りにいったもの）",
   // 「車庫証明はお客様出し」＝はい のとき、返送リストに載せない書類（画面の名前で指定）
-  garageHide: ["配置図"],
+  garageHide: ["車庫申請書（1枚のみ）", "配置図", "自認書", "保管場所使用承諾証明書"],
 };
 
 const SECTIONS = [
   {
     title: "遠方販売のテンプレート",
     templates: true,               // 文章を編集して印刷できる欄（文面は templates.js）
-    selectLabel: "テンプレート",
+    selectLabel: "",               // カードに名前を出さない
     checklist: false,              // 返送リストには載せない
     items: [
       { name: "普通車 現金",            key: "futsu-genkin" },

@@ -78,6 +78,17 @@
   .note li + li { margin-top: 4px; }
 
   .pick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pick.grow { flex: 1; min-width: 0; }
+  .pick.grow select { flex: 1; min-width: 12em; max-width: 26em; }
+  .item.wide { grid-column: 1 / -1; }
+  .item.wide .ctrl { gap: 10px; }
+  .item[data-on="1"] { border-color: var(--ink); }
+  .item[data-on="1"] .mark { background: var(--ink); border-color: var(--ink); }
+  .item[data-on="1"] .mark::after {
+    content: ""; width: 7px; height: 13px; margin-top: -3px;
+    border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg);
+  }
+  .one { white-space: nowrap; }
   .pick select {
     font: inherit; font-size: 1rem; color: var(--ink); background: var(--sheet);
     border: 2px solid var(--ink); border-radius: 5px; padding: 6px 8px; min-width: 9em;
@@ -150,6 +161,9 @@
 
   @media (max-width: 640px) {
     main { padding: 4px 14px 20px; }
+    .item.wide { grid-template-columns: auto 1fr; row-gap: 10px; }
+    .item.wide .pick.grow select { min-width: 0; width: 100%; max-width: none; }
+    .item.wide .ctrl { grid-column: 1 / -1; justify-content: flex-end; }
     header { padding-left: 14px; padding-right: 14px; }
     .grid { grid-template-columns: 1fr; }
   }
@@ -200,7 +214,7 @@
   SECTIONS.forEach((sec, si) => {
     if (sec.templates) {
       items.push({
-        id: si + "-t", sec: sec.title, name: sec.selectLabel || sec.title, on: false, copies: 1,
+        id: si + "-t", sec: sec.title, name: sec.selectLabel === undefined ? sec.title : sec.selectLabel, on: false, copies: 1,
         inList: sec.checklist !== false, text: true, choices: sec.items, pick: 0,
       });
       return;
@@ -241,10 +255,10 @@
     if (x.text) {
       const opts = x.choices.map((c, i) =>
         `<option value="${i}" ${i === x.pick ? "selected" : ""}>${esc(c.name)}</option>`).join("");
-      return `<div class="item ${x.on ? "on" : ""}" data-id="${x.id}">
+      return `<div class="item wide" ${x.on ? 'data-on="1"' : ""} data-id="${x.id}">
         <span class="mark" aria-hidden="true"></span>
-        <div class="pick">
-          <span class="name">${esc(x.name)}</span>
+        <div class="pick grow">
+          ${x.name ? `<span class="name">${esc(x.name)}</span>` : ""}
           <select data-act="pick" aria-label="テンプレートを選ぶ">${opts}</select>
         </div>
         <div class="ctrl">
