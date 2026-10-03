@@ -82,7 +82,7 @@ const SECTIONS = [
     obtain: true,       // お客様が取得する書類（印刷はせず、返送リストにだけ載せる）
     items: [
       { name: "印鑑証明書" },
-      { name: "住民票" },
+      { name: "住民票", listName: "住民票（本人のみ　マイナンバー・本籍不要）" },
       { name: "戸籍の附票" },
       { name: "戸籍の除票" },
       { name: "戸籍謄本" },
