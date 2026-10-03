@@ -41,7 +41,7 @@ const PRINT_ORDER = [
   "配置図",
   "配置図 個人宅（見本）",
   "自認書",
-  "車庫証明（見本）",
+  "車庫証明（4枚一式）",
   "自認書（見本）",
   "保管場所使用承諾証明書",
   "保管場所使用承諾証明書（見本）",
@@ -111,7 +111,7 @@ const SECTIONS = [
     items: [
       { name: "委任状（見本）",           file: "mihon-ininjo.jpg" },
       { name: "譲渡証明書（見本）",       file: "mihon-joto.jpg" },
-      { name: "車庫証明（見本）",         file: "mihon-shako.jpg" },
+      { name: "車庫証明（4枚一式）",         file: "mihon-shako.jpg" },
       { name: "自認書（見本）",           file: "mihon-jinin.jpg" },
       { name: "配置図 個人宅（見本）",    file: "mihon-haichizu.jpg" },
       { name: "保管場所使用承諾証明書（見本）", file: "mihon-shodaku.jpg" },
