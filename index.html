@@ -300,8 +300,8 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="data.js"></script>
-<script src="attach.js"></script>
+<script src="data.js?v=20261019b"></script>
+<script src="attach.js?v=20261019b"></script>
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -648,7 +648,7 @@
     line(L, 116, Rt, 116, 1.5);
     text(COVER.message, L, 156, 11, false);
 
-    // 表（見出しごとに分けて載せる。「ご記入・ご捺印」が先）
+    // 表（見出しごとに分けて載せる。「ご返送いただく書類」が先）
     let y = 172;
     const rowH = 38;
     const order = [...new Set([COVER.groupMain, COVER.groupObtain, COVER.groupSend].filter(Boolean))];
