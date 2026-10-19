@@ -159,8 +159,55 @@
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
   .toast.err { border-color: var(--shu); color: var(--shu); }
 
+  /* ---- 添付書類 ---- */
+  .att { margin-top: 24px; }
+  .att-head {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px;
+    background: var(--sheet); border: 2px solid var(--line); border-radius: var(--r);
+    padding: 12px 14px; min-height: 64px; cursor: pointer; user-select: none;
+  }
+  .att-head:hover { border-color: var(--muted); }
+  .att-head input { width: 26px; height: 26px; margin: 0; accent-color: var(--ink); grid-row: span 2; }
+  .att-head .sub { grid-column: 2; }
+  .att.on .att-head { border-color: var(--ink); border-radius: var(--r) var(--r) 0 0; }
+  .att-body {
+    background: var(--sheet); border: 2px solid var(--ink); border-top: none;
+    border-radius: 0 0 var(--r) var(--r); padding: 6px 18px 18px;
+  }
+  .att-row { display: grid; grid-template-columns: 6.5em 1fr; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .att-row.top { align-items: start; }
+  .att-lbl { font-weight: 700; font-size: .95rem; }
+  .att-row.top .att-lbl { padding-top: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+    border: 1px solid var(--line); border-radius: 5px; padding: 6px 10px; background: var(--sheet);
+  }
+  .chip input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+  .chip:has(input:checked) { border-color: var(--ink); font-weight: 700; }
+  .att-memo, #attFree {
+    font: inherit; font-size: 1rem; color: var(--ink); background: var(--sheet);
+    border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px;
+  }
+  .att-memo { flex: 1; min-width: 12em; }
+  #attFree { width: 100%; resize: vertical; line-height: 1.6; }
+  .att-texts { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .att-texts .chip { justify-content: flex-start; }
+  .att-texts .g { font-size: .75rem; color: var(--muted); font-weight: 400; border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; white-space: nowrap; }
+  .att-prev { margin-top: 14px; }
+  .att-prev summary { cursor: pointer; font-weight: 700; font-size: .9rem; }
+  .att-prev pre {
+    white-space: pre-wrap; font: inherit; font-size: .9rem; line-height: 1.7;
+    border: 1px solid var(--line); border-radius: 5px; padding: 12px; margin: 8px 0 0; background: var(--paper);
+    max-height: 40vh; overflow: auto;
+  }
+  .att-btns { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .att-save { height: 48px; padding: 0 36px; border-radius: 5px; border: none; background: var(--ink); color: #fff; font-weight: 700; font-size: 1.05rem; }
+
   @media (max-width: 640px) {
     main { padding: 4px 14px 20px; }
+    .att-row { grid-template-columns: 1fr; gap: 6px; }
+    .att-texts { grid-template-columns: 1fr; }
     .item.wide { grid-template-columns: auto 1fr; row-gap: 10px; }
     .item.wide .pick.grow select { min-width: 0; width: 100%; max-width: none; }
     .item.wide .ctrl { grid-column: 1 / -1; justify-content: flex-end; }
@@ -173,7 +220,40 @@
 <body>
 
 <header><h1 id="title">書類印刷</h1></header>
-<main id="main"></main>
+<main>
+  <section class="att" id="att" hidden>
+    <h2>添付書類</h2>
+    <label class="att-head">
+      <input type="checkbox" id="attOn">
+      <span class="name">添付書類を作成</span>
+      <span class="sub">チェックすると、ご案内文を書類と一緒に印刷します</span>
+    </label>
+    <div class="att-body" id="attBody" hidden>
+      <div class="att-row">
+        <span class="att-lbl">担当者</span>
+        <div class="pick"><select id="attStaff" aria-label="担当者"></select></div>
+      </div>
+      <div class="att-row">
+        <span class="att-lbl">担当の休日</span>
+        <div class="chips" id="attDays"></div>
+      </div>
+      <div class="att-row top">
+        <span class="att-lbl">添付文章</span>
+        <div class="att-texts" id="attTexts"></div>
+      </div>
+      <div class="att-row top">
+        <span class="att-lbl">自由記載</span>
+        <textarea id="attFree" rows="4" placeholder="ここに書いた文章も印刷されます"></textarea>
+      </div>
+      <details class="att-prev"><summary>印刷される文章を確認</summary><pre id="attPrev"></pre></details>
+      <div class="att-btns">
+        <button class="att-save" id="attSave">保存</button>
+        <span class="sub">保存すると、次に開いたときも同じ内容で始まります</span>
+      </div>
+    </div>
+  </section>
+  <div id="main"></div>
+</main>
 
 <div class="bar">
   <label class="cover-opt"><input type="checkbox" id="cover" checked> 頭紙をつける</label>
@@ -201,6 +281,7 @@
 
 <script src="templates.js"></script>
 <script src="data.js"></script>
+<script src="attach.js"></script>
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -240,7 +321,7 @@
       }));
   });
   const chosen = (x) => (x.choices ? x.choices[x.pick] : null);
-  const fileOf = (x) => (x.text ? "text" : x.choices ? chosen(x).file : x.file);
+  const fileOf = (x) => (x.attach ? "attach" : x.text ? "text" : x.choices ? chosen(x).file : x.file);
   // 編集した文面（このページを開いている間だけ保持）
   const edited = {};
   const textOf = (x) => {
@@ -249,6 +330,84 @@
   };
   const listNameOf = (x) => (x.choices ? x.tmpl.replace("{name}", chosen(x).name) : x.listName);
   const byId = (id) => items.find((x) => x.id === id);
+
+  // ---------- 添付書類 ----------
+  const HAS_ATT = typeof ATTACH !== "undefined";
+  const attItem = { attach: true, id: "attach", sec: "添付書類", name: "添付書類", copies: 1, inList: false, on: false };
+  const selected = () => (attItem.on ? [attItem] : []).concat(items.filter((x) => x.on));
+  const att = { staff: "", days: [], other: false, memo: "", picks: [], free: "" };
+  const ATT_KEY = "attach-v1";
+  let staffList = [];
+
+  function attText() {
+    const A = ATTACH;
+    const blocks = [A.greeting.join("\n").replace(/\{name\}/g, att.staff)];
+    A.texts.filter((t) => att.picks.includes(t.name)).forEach((t) => blocks.push(t.text.trim()));
+    if (att.free.trim()) blocks.push(att.free.trim());
+    const parts = [];
+    const days = A.holidays.filter((d) => att.days.includes(d));
+    if (days.length) parts.push("毎週" + days.map((d) => d + "曜日").join("・"));
+    if (att.other && att.memo.trim()) parts.push(att.memo.trim());
+    if (parts.length) blocks.push(A.holidayLabel + parts.join("、") + (A.holidayNote ? "\n" + A.holidayNote : ""));
+    if (A.closing) blocks.push(A.closing);
+    return blocks.join("\n\n");
+  }
+
+  function attPreview() { $("#attPrev").textContent = attText(); }
+
+  function attSetup() {
+    if (!HAS_ATT) return;
+    try { Object.assign(att, JSON.parse(localStorage.getItem(ATT_KEY) || "{}")); } catch (_) {}
+    const sec = SECTIONS.find((s) => s.title === ATTACH.staffFrom);
+    staffList = sec ? sec.items.map((it) => it.name) : [];
+    if (!staffList.includes(att.staff)) att.staff = staffList[0] || "";
+
+    $("#attStaff").innerHTML = staffList.map((n) =>
+      `<option ${n === att.staff ? "selected" : ""}>${esc(n)}</option>`).join("");
+    $("#attDays").innerHTML = ATTACH.holidays.map((d) =>
+      `<label class="chip"><input type="checkbox" data-day="${esc(d)}" ${att.days.includes(d) ? "checked" : ""}>${esc(d)}</label>`).join("") +
+      `<label class="chip"><input type="checkbox" id="attOther" ${att.other ? "checked" : ""}>他</label>` +
+      `<input class="att-memo" id="attMemo" placeholder="他のお休み（例：第2日曜日、祝日）" value="${esc(att.memo)}">`;
+    $("#attTexts").innerHTML = ATTACH.texts.map((t) =>
+      `<label class="chip" title="${esc(t.text)}"><input type="checkbox" data-text="${esc(t.name)}" ${att.picks.includes(t.name) ? "checked" : ""}>` +
+      `<span class="g">${esc(t.group)}</span>${esc(t.name)}</label>`).join("");
+    $("#attFree").value = att.free;
+    $("#att").hidden = false;
+    attPreview();
+
+    $("#attOn").addEventListener("change", (e) => {
+      attItem.on = e.target.checked;
+      $("#attBody").hidden = !attItem.on;
+      $("#att").classList.toggle("on", attItem.on);
+      updateBar();
+    });
+    $("#attBody").addEventListener("input", (e) => {
+      const t = e.target;
+      if (t.id === "attStaff") att.staff = t.value;
+      else if (t.id === "attFree") att.free = t.value;
+      else if (t.id === "attMemo") { att.memo = t.value; if (t.value.trim()) { att.other = true; $("#attOther").checked = true; } }
+      else if (t.id === "attOther") att.other = t.checked;
+      else if (t.dataset.day) att.days = ATTACH.holidays.filter((d) => $(`[data-day="${d}"]`).checked);
+      else if (t.dataset.text) att.picks = ATTACH.texts.map((x) => x.name).filter((n) => $(`[data-text="${CSS.escape(n)}"]`).checked);
+      attPreview();
+    });
+    $("#attSave").addEventListener("click", () => {
+      try {
+        localStorage.setItem(ATT_KEY, JSON.stringify(att));
+        toast("保存しました。下の「印刷」で書類と一緒に印刷されます。");
+      } catch (_) {
+        toast("このブラウザでは保存できませんでした。印刷はこのまま行えます。", true);
+      }
+    });
+  }
+
+  function attSetOn(v) {
+    attItem.on = v;
+    if (!HAS_ATT) return;
+    $("#attOn").checked = v;
+    $("#attBody").hidden = !v;
+    $("#att").classList.toggle("on", v);
+  }
 
   // ---------- 表示 ----------
   function itemHtml(x) {
@@ -337,7 +496,7 @@
   }
 
   function updateBar() {
-    const sel = items.filter((x) => x.on);
+    const sel = selected();
     const n = sel.reduce((a, x) => a + x.copies, 0);
     $("#count").innerHTML = sel.length ? `<strong>${sel.length}</strong>種類・計<strong>${n}</strong>部` : "印刷する書類を選んでください";
     $("#go").disabled = !sel.length;
@@ -383,10 +542,11 @@
 
   $("#clear").addEventListener("click", () => {
     items.forEach((x) => { x.on = false; x.copies = 1; });
+    attSetOn(false);
     render();
   });
   $("#go").addEventListener("click", () => {
-    const sel = items.filter((x) => x.on);
+    const sel = selected();
     if (sel.length) startPrint(sel);
   });
 
@@ -410,7 +570,7 @@
   // data.js の PRINT_ORDER の順に並べ替える
   function sortForPrint(list) {
     const order = (typeof PRINT_ORDER !== "undefined" ? PRINT_ORDER : []);
-    const keyOf = (x) => (x.choices || x.text ? x.sec : x.name);
+    const keyOf = (x) => (x.attach || x.choices || x.text ? x.sec : x.name);
     const rank = (x) => {
       const i = order.indexOf(keyOf(x));
       return i < 0 ? order.length + items.indexOf(x) : i;
@@ -593,6 +753,18 @@
   async function build(list, cover) {
     const { PDFDocument } = PDFLib;
     const out = await PDFDocument.create();
+    // 添付書類（ご案内文）は頭紙より前に入れる
+    for (const x of list.filter((d) => d.attach)) {
+      const pages = await textPages(attText());
+      for (let c = 0; c < x.copies; c++) {
+        for (const pb of pages) {
+          const img = await out.embedPng(pb);
+          out.addPage([595.28, 841.89]).drawImage(img, { x: 0, y: 0, width: 595.28, height: 841.89 });
+        }
+      }
+    }
+    const hadAttach = list.some((d) => d.attach);
+    list = list.filter((d) => !d.attach);
     if (cover) {
       const img = await out.embedPng(await drawCover(cover.rows, cover.notes));
       out.addPage([595.28, 841.89]).drawImage(img, { x: 0, y: 0, width: 595.28, height: 841.89 });
@@ -600,8 +772,8 @@
     const missing = [];
     let added = 0;
     for (const x of list) {
-      if (x.text) {
-        const pages = await textPages(textOf(x));
+      if (x.text || x.attach) {
+        const pages = await textPages(x.attach ? attText() : textOf(x));
         for (let c = 0; c < x.copies; c++) {
           for (const pb of pages) {
             const img = await out.embedPng(pb);
@@ -642,7 +814,7 @@
         }
       }
     }
-    if (!added && !cover) throw new Error(`${missing.join("、")} が見つかりません。GitHubにこのファイルがあるか確認してください。`);
+    if (!added && !cover && !hadAttach) throw new Error(`${missing.join("、")} が見つかりません。GitHubにこのファイルがあるか確認してください。`);
     return { blob: new Blob([await out.save()], { type: "application/pdf" }), missing };
   }
 
@@ -672,6 +844,7 @@
     }
   }
 
+  attSetup();
   render();
 })();
 </script>
