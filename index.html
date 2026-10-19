@@ -203,8 +203,16 @@
   .att-texts { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   .att-texts .chip { justify-content: flex-start; }
   .att-texts .g { font-size: .75rem; color: var(--muted); font-weight: 400; border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; white-space: nowrap; }
-  .att-prev { margin-top: 14px; }
-  .att-prev summary { cursor: pointer; font-weight: 700; font-size: .9rem; }
+  .att-prev { margin-top: 16px; }
+  .att-prev summary {
+    list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    height: 44px; padding: 0 18px; border: 2px solid var(--ink); border-radius: 5px;
+    background: var(--sheet); color: var(--ink); font-weight: 700; font-size: 1rem;
+  }
+  .att-prev summary::-webkit-details-marker { display: none; }
+  .att-prev summary::before { content: "▶"; font-size: .75rem; transition: transform .15s; }
+  .att-prev[open] summary::before { transform: rotate(90deg); }
+  .att-prev summary:hover { background: var(--ink); color: #fff; }
   .att-prev pre {
     white-space: pre-wrap; font: inherit; font-size: .9rem; line-height: 1.7;
     border: 1px solid var(--line); border-radius: 5px; padding: 12px; margin: 8px 0 0; background: var(--paper);
@@ -257,7 +265,6 @@
       <details class="att-prev"><summary>印刷される文章を確認</summary><pre id="attPrev"></pre></details>
       <div class="att-btns">
         <button class="att-save" id="attSave">保存</button>
-        <span class="sub">保存すると、次に開いたときも同じ内容で始まります</span>
       </div>
     </div>
   </section>
@@ -348,7 +355,6 @@
   const withMihon = (list) => list.flatMap((x) => (x.withMihon && x.mihon)
     ? [x, { name: x.mihonName, file: x.mihon, copies: 1, inList: false, sec: x.sec }] : [x]);
   const att = { staff: "", days: [], other: false, memo: "", picks: [], free: "" };
-  const ATT_KEY = "attach-v1";
   let staffList = [];
 
   function attText() {
@@ -369,7 +375,6 @@
 
   function attSetup() {
     if (!HAS_ATT) return;
-    try { Object.assign(att, JSON.parse(localStorage.getItem(ATT_KEY) || "{}")); } catch (_) {}
     const sec = SECTIONS.find((s) => s.title === ATTACH.staffFrom);
     staffList = sec ? sec.items.map((it) => it.name) : [];
     if (!staffList.includes(att.staff)) att.staff = staffList[0] || "";
@@ -404,12 +409,7 @@
       attPreview();
     });
     $("#attSave").addEventListener("click", () => {
-      try {
-        localStorage.setItem(ATT_KEY, JSON.stringify(att));
-        toast("保存しました。下の「印刷」で書類と一緒に印刷されます。");
-      } catch (_) {
-        toast("このブラウザでは保存できませんでした。印刷はこのまま行えます。", true);
-      }
+      toast("保存しました。下の「印刷」で書類と一緒に印刷されます。");
     });
   }
 
