@@ -279,7 +279,6 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="templates.js"></script>
 <script src="data.js"></script>
 <script src="attach.js"></script>
 <script>
@@ -326,7 +325,7 @@
   const edited = {};
   const textOf = (x) => {
     const k = chosen(x).key;
-    return k in edited ? edited[k] : (TEMPLATE_TEXT[k] || "");
+    return k in edited ? edited[k] : ((typeof TEMPLATE_TEXT !== "undefined" && TEMPLATE_TEXT[k]) || "");
   };
   const listNameOf = (x) => (x.choices ? x.tmpl.replace("{name}", chosen(x).name) : x.listName);
   const byId = (id) => items.find((x) => x.id === id);
