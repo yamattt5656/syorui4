@@ -199,6 +199,7 @@
     border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px;
   }
   .att-memo { flex: 1; min-width: 12em; }
+  .att-cust { flex: 0 1 20em; }
   #attFree { width: 100%; resize: vertical; line-height: 1.6; }
   .att-texts { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   .att-texts .chip { justify-content: flex-start; }
@@ -246,6 +247,10 @@
       <span class="sub">チェックすると、ご案内文を書類と一緒に印刷します</span>
     </label>
     <div class="att-body" id="attBody" hidden>
+      <div class="att-row">
+        <span class="att-lbl">お客様名</span>
+        <div class="pick"><input class="att-memo att-cust" id="attCust" placeholder="例：山田 太郎" aria-label="お客様名"><span class="name">様</span></div>
+      </div>
       <div class="att-row">
         <span class="att-lbl">担当者</span>
         <div class="pick"><select id="attStaff" aria-label="担当者"></select></div>
@@ -354,12 +359,15 @@
   // 「見本」にチェックがある書類は、見本の画像も印刷する（見本は1部・返送リストには載せない）
   const withMihon = (list) => list.flatMap((x) => (x.withMihon && x.mihon)
     ? [x, { name: x.mihonName, file: x.mihon, copies: 1, inList: false, sec: x.sec }] : [x]);
-  const att = { staff: "", days: [], other: false, memo: "", picks: [], free: "" };
+  const att = { cust: "", staff: "", days: [], other: false, memo: "", picks: [], free: "" };
   let staffList = [];
 
   function attText() {
     const A = ATTACH;
-    const blocks = [A.greeting.join("\n").replace(/\{name\}/g, att.staff)];
+    const blocks = [];
+    const cust = att.cust.trim().replace(/\s*様$/, "");   // 「様」を二重に付けない
+    if (cust) blocks.push(cust + "様");
+    blocks.push(A.greeting.join("\n").replace(/\{name\}/g, att.staff));
     A.texts.filter((t) => att.picks.includes(t.name)).forEach((t) => blocks.push(t.text.trim()));
     if (att.free.trim()) blocks.push(att.free.trim());
     const parts = [];
@@ -400,7 +408,8 @@
     });
     $("#attBody").addEventListener("input", (e) => {
       const t = e.target;
-      if (t.id === "attStaff") att.staff = t.value;
+      if (t.id === "attCust") att.cust = t.value;
+      else if (t.id === "attStaff") att.staff = t.value;
       else if (t.id === "attFree") att.free = t.value;
       else if (t.id === "attMemo") { att.memo = t.value; if (t.value.trim()) { att.other = true; $("#attOther").checked = true; } }
       else if (t.id === "attOther") att.other = t.checked;
