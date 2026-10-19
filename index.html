@@ -612,9 +612,10 @@
         .filter((x) => x.inList && !hide.includes(x.name))
         .map((x) => {
           const sec = SECTIONS.find((s) => s.title === x.sec) || {};
-          return { name: listNameOf(x), copies: x.copies, group: sec.coverGroup || COVER.groupMain || "" };
+          const it = (sec.items || []).find((i) => i.name === x.name) || {};
+          return { name: listNameOf(x), copies: x.copies, group: it.coverGroup || sec.coverGroup || COVER.groupMain || "" };
         });
-      if (ans === "yes") rows.push({ name: COVER.garageItem, copies: 1, group: COVER.groupObtain || "" });
+      if (ans === "yes") rows.push({ name: COVER.garageItem, copies: 1, group: COVER.groupSend || COVER.groupMain || "" });
       const notes = list.filter((x) => x.coverNote).map((x) => x.coverNote);
       if (rows.length) cover = { rows, notes };
     }
@@ -650,7 +651,7 @@
     // 表（見出しごとに分けて載せる。「ご記入・ご捺印」が先）
     let y = 172;
     const rowH = 38;
-    const order = [COVER.groupMain || ""];
+    const order = [...new Set([COVER.groupMain, COVER.groupObtain, COVER.groupSend].filter(Boolean))];
     rows.forEach((r) => { if (!order.includes(r.group)) order.push(r.group); });
     const row = (r) => {
       g.lineWidth = 1; g.strokeRect(L + 6, y + 11, 16, 16);
