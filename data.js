@@ -78,27 +78,23 @@ const SECTIONS = [
   {
     title: "書類",
     items: [
-      { name: "委任状",                   file: "ininjo.pdf" },
-      { name: "譲渡証明書",               file: "joto.pdf" },
-      { name: "車庫申請書（1枚のみ）",     file: "shako-shinsei.pdf" },
-      { name: "自認書",                   file: "jinin.pdf" },
-      { name: "配置図",                   file: "haichizu.pdf" },
-      { name: "保管場所使用承諾証明書",   file: "shodaku.pdf" },
-      { name: "所有権解除依頼書",         file: "shoyuken-kaijo.pdf" },
+      // mihon … 書類と一緒に印刷できる書き方見本（カードに「見本」ボタンが付きます）
+      // mihonName … 印刷順（PRINT_ORDER）で使う見本の名前
+      { name: "委任状",                 file: "ininjo.pdf",         mihon: "mihon-ininjo.jpg",         mihonName: "委任状（見本）" },
+      { name: "譲渡証明書",             file: "joto.pdf",           mihon: "mihon-joto.jpg",           mihonName: "譲渡証明書（見本）" },
+      { name: "車庫申請書（1枚のみ）",   file: "shako-shinsei.pdf" },
+      { name: "自認書",                 file: "jinin.pdf",          mihon: "mihon-jinin.jpg",          mihonName: "自認書（見本）" },
+      { name: "配置図",                 file: "haichizu.pdf",       mihon: "mihon-haichizu.jpg",       mihonName: "配置図 個人宅（見本）" },
+      { name: "保管場所使用承諾証明書", file: "shodaku.pdf",        mihon: "mihon-shodaku.jpg",        mihonName: "保管場所使用承諾証明書（見本）" },
+      { name: "所有権解除依頼書",       file: "shoyuken-kaijo.pdf", mihon: "mihon-shoyuken-kaijo.png", mihonName: "所有権解除依頼書（見本）" },
     ],
   },
   {
     title: "書き方見本",
     checklist: false,   // 頭紙のチェックリストには載せない
     items: [
-      { name: "委任状（見本）",           file: "mihon-ininjo.jpg" },
-      { name: "譲渡証明書（見本）",       file: "mihon-joto.jpg" },
-      { name: "車庫証明（4枚一式）",         file: "mihon-shako.jpg" },
-      { name: "自認書（見本）",           file: "mihon-jinin.jpg" },
-      { name: "配置図 個人宅（見本）",    file: "mihon-haichizu.jpg" },
-      { name: "保管場所使用承諾証明書（見本）", file: "mihon-shodaku.jpg" },
-      { name: "所有権解除依頼書（見本）",       file: "mihon-shoyuken-kaijo.png" },
-      { name: "車庫証明の提出の仕方",           file: "shako-teishutsu.pdf" },
+      { name: "車庫証明（4枚一式）",   file: "mihon-shako.jpg" },
+      { name: "車庫証明の提出の仕方",  file: "shako-teishutsu.pdf" },
     ],
   },
   {

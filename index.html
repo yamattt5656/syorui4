@@ -159,6 +159,15 @@
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
   .toast.err { border-color: var(--shu); color: var(--shu); }
 
+  .mchip {
+    display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 10px;
+    border: 1px solid var(--line); border-radius: 5px; background: var(--sheet); font-size: .9rem;
+  }
+  .mchip .mbox { width: 16px; height: 16px; border: 2px solid var(--line); border-radius: 3px; display: grid; place-items: center; }
+  .mchip.on { border-color: var(--ink); font-weight: 700; }
+  .mchip.on .mbox { background: var(--ink); border-color: var(--ink); }
+  .mchip.on .mbox::after { content: ""; width: 4px; height: 8px; margin-top: -2px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+
   /* ---- 添付書類 ---- */
   .att { margin-top: 24px; }
   .att-head {
@@ -314,6 +323,7 @@
     sec.items.forEach((it, ii) =>
       items.push({
         id: si + "-" + ii, sec: sec.title, name: it.name, file: it.file, on: false, copies: 1,
+        mihon: it.mihon, mihonName: it.mihonName || it.name + "（見本）", withMihon: false,
         inList: sec.checklist !== false,
         obtain: !!sec.obtain,
         listName: it.listName || (sec.listName ? sec.listName.replace("{name}", it.name) : it.name),
@@ -334,6 +344,9 @@
   const HAS_ATT = typeof ATTACH !== "undefined";
   const attItem = { attach: true, id: "attach", sec: "添付書類", name: "添付書類", copies: 1, inList: false, on: false };
   const selected = () => (attItem.on ? [attItem] : []).concat(items.filter((x) => x.on));
+  // 「見本」にチェックがある書類は、見本の画像も印刷する（見本は1部・返送リストには載せない）
+  const withMihon = (list) => list.flatMap((x) => (x.withMihon && x.mihon)
+    ? [x, { name: x.mihonName, file: x.mihon, copies: 1, inList: false, sec: x.sec }] : [x]);
   const att = { staff: "", days: [], other: false, memo: "", picks: [], free: "" };
   const ATT_KEY = "attach-v1";
   let staffList = [];
@@ -466,6 +479,7 @@
       <span class="mark" aria-hidden="true"></span>
       <div class="name">${esc(x.name)}</div>
       <div class="ctrl">
+        ${x.mihon ? `<button class="mchip ${x.withMihon ? "on" : ""}" data-act="mihon" aria-pressed="${x.withMihon}"><span class="mbox" aria-hidden="true"></span>見本</button>` : ""}
         <div class="stepper">
           <button data-act="minus" aria-label="部数を減らす" ${x.copies <= 1 ? "disabled" : ""}>−</button>
           <output>${x.copies}部</output>
@@ -495,7 +509,7 @@
   }
 
   function updateBar() {
-    const sel = selected();
+    const sel = withMihon(selected());
     const n = sel.reduce((a, x) => a + x.copies, 0);
     $("#count").innerHTML = sel.length ? `<strong>${sel.length}</strong>種類・計<strong>${n}</strong>部` : "印刷する書類を選んでください";
     $("#go").disabled = !sel.length;
@@ -511,7 +525,8 @@
     if (btn) {
       const act = btn.dataset.act;
       if (act === "edit") { openEditor(x); return; }
-      if (act === "print") { startPrint([x]); return; }
+      if (act === "print") { startPrint(withMihon([x])); return; }
+      if (act === "mihon") { x.withMihon = !x.withMihon; if (x.withMihon) x.on = true; }
       if (act === "minus") x.copies = Math.max(1, x.copies - 1);
       if (act === "plus") { x.copies = Math.min(20, x.copies + 1); x.on = true; }
       redraw(x, `[data-act="${act}"]`);
@@ -540,12 +555,12 @@
   });
 
   $("#clear").addEventListener("click", () => {
-    items.forEach((x) => { x.on = false; x.copies = 1; });
+    items.forEach((x) => { x.on = false; x.copies = 1; x.withMihon = false; });
     attSetOn(false);
     render();
   });
   $("#go").addEventListener("click", () => {
-    const sel = selected();
+    const sel = withMihon(selected());
     if (sel.length) startPrint(sel);
   });
 
