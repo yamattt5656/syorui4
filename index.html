@@ -300,8 +300,8 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="data.js?v=20261019b"></script>
-<script src="attach.js?v=20261019b"></script>
+<script src="data.js?v=20261019c"></script>
+<script src="attach.js?v=20261019c"></script>
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -367,6 +367,8 @@
     const blocks = [];
     const cust = att.cust.trim().replace(/\s*様$/, "");   // 「様」を二重に付けない
     if (cust) blocks.push(cust + "様");
+    // 右寄せの行は先頭に \u0001 を付けて印字側に伝える
+    if (A.signature && A.signature.length) blocks.push(A.signature.map((t) => "\u0001" + t).join("\n"));
     blocks.push(A.greeting.join("\n").replace(/\{name\}/g, att.staff));
     A.texts.filter((t) => att.picks.includes(t.name)).forEach((t) => blocks.push(t.text.trim()));
     if (att.free.trim()) blocks.push(att.free.trim());
@@ -379,7 +381,19 @@
     return blocks.join("\n\n");
   }
 
-  function attPreview() { $("#attPrev").textContent = attText(); }
+  function attPreview() {
+    // 画面の確認欄では、右寄せの行を右に寄せて表示する
+    const pre = $("#attPrev");
+    const all = attText().split("\n");
+    const sig = all.filter((ln) => ln.startsWith("\u0001")).map((ln) => esc(ln.slice(1))).join("<br>");
+    let done = false;
+    pre.innerHTML = all.map((ln) => {
+      if (!ln.startsWith("\u0001")) return `<div>${esc(ln) || "&nbsp;"}</div>`;
+      if (done) return "";
+      done = true;
+      return `<div style="text-align:right"><div style="display:inline-block;text-align:left">${sig}</div></div>`;
+    }).join("");
+  }
 
   function attSetup() {
     if (!HAS_ATT) return;
@@ -735,6 +749,7 @@
     const lines = [];
     String(text).split("\n").forEach((src) => {
       if (!src) { lines.push(""); return; }
+      if (src.startsWith("\u0001")) { lines.push(src); return; }   // 右寄せの行（折り返さない）
       let cur = "";
       for (const ch of src) {
         if (probe.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
@@ -743,6 +758,7 @@
       lines.push(cur);
     });
 
+    const sigW = Math.max(0, ...lines.filter((l) => l.startsWith("\u0001")).map((l) => probe.measureText(l.slice(1)).width));
     const pages = [];
     for (let i = 0; i < lines.length; i += perPage) {
       const c = document.createElement("canvas");
@@ -751,7 +767,10 @@
       g.scale(S, S);
       g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
       g.fillStyle = "#000"; g.font = `400 ${SIZE}px ${F}`; g.textBaseline = "alphabetic";
-      lines.slice(i, i + perPage).forEach((ln, j) => g.fillText(ln, M, M + LH * (j + 1)));
+      lines.slice(i, i + perPage).forEach((ln, j) => {
+        if (ln.startsWith("\u0001")) g.fillText(ln.slice(1), W - M - sigW, M + LH * (j + 1));   // 右上に左そろえで並べる
+        else g.fillText(ln, M, M + LH * (j + 1));
+      });
       pages.push(await new Promise((res) => c.toBlob((b) => b.arrayBuffer().then(res), "image/png")));
     }
     return pages;
