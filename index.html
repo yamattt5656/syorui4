@@ -219,6 +219,18 @@
     border: 1px solid var(--line); border-radius: 5px; padding: 12px; margin: 8px 0 0; background: var(--paper);
     max-height: 40vh; overflow: auto;
   }
+  .att-paper { border: 1px solid var(--line); border-radius: 5px; background: var(--paper); margin-top: 8px; padding: 12px; }
+  .att-paper pre { border: none; padding: 0; margin: 0; background: none; max-height: 50vh; }
+  #attEdit {
+    width: 100%; height: min(55vh, 520px); resize: vertical; display: block;
+    font: inherit; font-size: .95rem; line-height: 1.7; color: var(--ink);
+    border: 2px solid var(--ink); border-radius: 5px; padding: 10px; background: var(--sheet);
+  }
+  .att-paper [hidden] { display: none !important; }
+  .att-foot { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); font-size: .8rem; text-align: center; color: var(--muted); line-height: 1.6; }
+  .att-edit-btns { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .att-edit-btns .one { height: 44px; padding: 0 22px; font-size: 1rem; }
+  .att-edited { font-size: .85rem; color: var(--shu); }
   .att-btns { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
   .att-save { height: 48px; padding: 0 36px; border-radius: 5px; border: none; background: var(--ink); color: #fff; font-weight: 700; font-size: 1.05rem; }
 
@@ -267,7 +279,18 @@
         <span class="att-lbl">自由記載</span>
         <textarea id="attFree" rows="4" placeholder="ここに書いた文章も印刷されます"></textarea>
       </div>
-      <details class="att-prev"><summary>印刷される文章を確認</summary><pre id="attPrev"></pre></details>
+      <details class="att-prev" id="attPrevBox"><summary>印刷される文章を確認</summary>
+        <div class="att-paper">
+          <pre id="attPrev"></pre>
+          <textarea id="attEdit" spellcheck="false" hidden aria-label="印刷される文章を編集"></textarea>
+          <div class="att-foot" id="attFoot"></div>
+        </div>
+      </details>
+      <div class="att-edit-btns">
+        <button class="one" id="attEditBtn">編集する</button>
+        <button class="ed-reset" id="attReset" hidden>元の文章に戻す</button>
+        <span class="att-edited" id="attEdited" hidden>編集済み：上の選択を変えても文章には反映されません。反映させたいときは「元の文章に戻す」を押してください。</span>
+      </div>
       <div class="att-btns">
         <button class="att-save" id="attSave">保存</button>
       </div>
@@ -300,8 +323,8 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="data.js?v=20261021a"></script>
-<script src="attach.js?v=20261021a"></script>
+<script src="data.js?v=20261022a"></script>
+<script src="attach.js?v=20261022a"></script>
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -367,8 +390,6 @@
     const blocks = [];
     const cust = att.cust.trim().replace(/\s*様$/, "");   // 「様」を二重に付けない
     if (cust) blocks.push(cust + "様");
-    // 右寄せの行は先頭に \u0001 を付けて印字側に伝える
-    if (A.signature && A.signature.length) blocks.push(A.signature.map((t) => "\u0001" + t).join("\n"));
     blocks.push(A.greeting.join("\n").replace(/\{name\}/g, att.staff));
     A.texts.filter((t) => att.picks.includes(t.name)).forEach((t) => blocks.push(t.text.trim()));
     if (att.free.trim()) blocks.push(att.free.trim());
@@ -381,18 +402,30 @@
     return blocks.join("\n\n");
   }
 
+  // 印刷する文章（編集していれば編集した文章）
+  const attFinal = () => (att.custom != null ? att.custom : attText());
+  const attSig = () => (ATTACH.signature || []);
+
   function attPreview() {
-    // 画面の確認欄では、右寄せの行を右に寄せて表示する
-    const pre = $("#attPrev");
-    const all = attText().split("\n");
-    const sig = all.filter((ln) => ln.startsWith("\u0001")).map((ln) => esc(ln.slice(1))).join("<br>");
-    let done = false;
-    pre.innerHTML = all.map((ln) => {
-      if (!ln.startsWith("\u0001")) return `<div>${esc(ln) || "&nbsp;"}</div>`;
-      if (done) return "";
-      done = true;
-      return `<div style="text-align:right"><div style="display:inline-block;text-align:left">${sig}</div></div>`;
-    }).join("");
+    $("#attPrev").textContent = attFinal();
+    $("#attFoot").innerHTML = attSig().map(esc).join("<br>");
+    const edited = att.custom != null;
+    $("#attReset").hidden = !edited;
+    $("#attEdited").hidden = !edited;
+  }
+
+  let attEditing = false;
+  function attEditMode(on) {
+    attEditing = on;
+    if (on) {
+      $("#attPrevBox").open = true;
+      $("#attEdit").value = attFinal();
+    }
+    $("#attEdit").hidden = !on;
+    $("#attPrev").hidden = on;
+    $("#attEditBtn").textContent = on ? "編集を終える" : "編集する";
+    if (on) $("#attEdit").focus();
+    attPreview();
   }
 
   function attSetup() {
@@ -429,6 +462,13 @@
       else if (t.id === "attOther") att.other = t.checked;
       else if (t.dataset.day) att.days = ATTACH.holidays.filter((d) => $(`[data-day="${d}"]`).checked);
       else if (t.dataset.text) att.picks = ATTACH.texts.map((x) => x.name).filter((n) => $(`[data-text="${CSS.escape(n)}"]`).checked);
+      attPreview();
+    });
+    $("#attEditBtn").addEventListener("click", () => attEditMode(!attEditing));
+    $("#attEdit").addEventListener("input", (e) => { e.stopPropagation(); att.custom = e.target.value; attPreview(); });
+    $("#attReset").addEventListener("click", () => {
+      delete att.custom;
+      if (attEditing) $("#attEdit").value = attText();
       attPreview();
     });
     $("#attSave").addEventListener("click", () => {
@@ -580,6 +620,7 @@
   $("#clear").addEventListener("click", () => {
     items.forEach((x) => { x.on = false; x.copies = 1; x.withMihon = false; });
     attSetOn(false);
+    if (HAS_ATT) { delete att.custom; attEditMode(false); }
     render();
   });
   $("#go").addEventListener("click", () => {
@@ -737,11 +778,13 @@
   });
 
   // 文面をA4縦のページ画像にする（必要なだけページを分けます）
-  async function textPages(text) {
+  async function textPages(text, footer) {
+    footer = footer || [];
     const F = '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif';
     try { await document.fonts.load(`400 11px "BIZ UDPGothic"`); } catch (_) {}
     const S = 2.5, W = 595.28, H = 841.89, M = 54, SIZE = 11, LH = 19.5;
-    const maxW = W - M * 2, perPage = Math.floor((H - M * 2) / LH);
+    const FS = 9.5, FLH = 15, footH = footer.length ? footer.length * FLH + 22 : 0;   // 下の署名欄
+    const maxW = W - M * 2, perPage = Math.floor((H - M * 2 - footH) / LH);
 
     // 行を折り返す
     const probe = document.createElement("canvas").getContext("2d");
@@ -749,7 +792,6 @@
     const lines = [];
     String(text).split("\n").forEach((src) => {
       if (!src) { lines.push(""); return; }
-      if (src.startsWith("\u0001")) { lines.push(src); return; }   // 右寄せの行（折り返さない）
       let cur = "";
       for (const ch of src) {
         if (probe.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
@@ -758,7 +800,6 @@
       lines.push(cur);
     });
 
-    const sigW = Math.max(0, ...lines.filter((l) => l.startsWith("\u0001")).map((l) => probe.measureText(l.slice(1)).width));
     const pages = [];
     for (let i = 0; i < lines.length; i += perPage) {
       const c = document.createElement("canvas");
@@ -767,10 +808,16 @@
       g.scale(S, S);
       g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
       g.fillStyle = "#000"; g.font = `400 ${SIZE}px ${F}`; g.textBaseline = "alphabetic";
-      lines.slice(i, i + perPage).forEach((ln, j) => {
-        if (ln.startsWith("\u0001")) g.fillText(ln.slice(1), W - M - sigW, M + LH * (j + 1));   // 右上に左そろえで並べる
-        else g.fillText(ln, M, M + LH * (j + 1));
-      });
+      lines.slice(i, i + perPage).forEach((ln, j) => g.fillText(ln, M, M + LH * (j + 1)));
+      if (footer.length) {
+        // ページの一番下に会社の署名（横長・中央）
+        const top = H - M + 14 - footer.length * FLH;
+        g.strokeStyle = "#000"; g.lineWidth = 0.6;
+        g.beginPath(); g.moveTo(M, top - 14); g.lineTo(W - M, top - 14); g.stroke();
+        g.font = `400 ${FS}px ${F}`; g.textAlign = "center";
+        footer.forEach((t, k) => g.fillText(t, W / 2, top + FLH * k));
+        g.textAlign = "left"; g.font = `400 ${SIZE}px ${F}`;
+      }
       pages.push(await new Promise((res) => c.toBlob((b) => b.arrayBuffer().then(res), "image/png")));
     }
     return pages;
@@ -813,7 +860,7 @@
     const out = await PDFDocument.create();
     // 添付書類（ご案内文）は頭紙より前に入れる
     for (const x of list.filter((d) => d.attach)) {
-      const pages = await textPages(attText());
+      const pages = await textPages(attFinal(), attSig());
       for (let c = 0; c < x.copies; c++) {
         for (const pb of pages) {
           const img = await out.embedPng(pb);
@@ -831,7 +878,7 @@
     let added = 0;
     for (const x of list) {
       if (x.text || x.attach) {
-        const pages = await textPages(x.attach ? attText() : textOf(x));
+        const pages = await textPages(x.attach ? attFinal() : textOf(x), x.attach ? attSig() : []);
         for (let c = 0; c < x.copies; c++) {
           for (const pb of pages) {
             const img = await out.embedPng(pb);
