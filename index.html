@@ -287,7 +287,7 @@
         </div>
       </details>
       <div class="att-edit-btns">
-        <button class="one" id="attEditBtn">反映して編集する（後で入力したものは消えます）</button>
+        <button class="one" id="attEditBtn">編集</button>
         <button class="ed-reset" id="attReset" hidden>元の文章に戻す</button>
         <span class="att-edited" id="attEdited" hidden>編集済み：上の選択を変えても、この文章には反映されません。</span>
       </div>
@@ -425,7 +425,7 @@
     }
     $("#attEdit").hidden = !on;
     $("#attPrev").hidden = on;
-    $("#attEditBtn").textContent = on ? "編集を終える" : "反映して編集する（後で入力したものは消えます）";
+    $("#attEditBtn").textContent = on ? "編集を終える" : "編集";
     if (on) $("#attEdit").focus();
     attPreview();
   }
